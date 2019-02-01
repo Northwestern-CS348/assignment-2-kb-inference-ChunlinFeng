@@ -185,7 +185,7 @@ class KnowledgeBase(object):
 
                     # del the fact_or_rule
                     ind = self.rules.index(fact_or_rule)
-                    del self.facts[ind]
+                    del self.rules[ind]
 
 class InferenceEngine(object):
     def fc_infer(self, fact, rule, kb):
