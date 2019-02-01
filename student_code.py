@@ -128,7 +128,64 @@ class KnowledgeBase(object):
         printv("Retracting {!r}", 0, verbose, [fact_or_rule])
         ####################################################
         # Student code goes here
-        
+
+        # List several rules here
+        # An asserted fact should only be removed if it is unsupported.
+        # Rules must never be retracted and an asserted rule should never be removed.
+        # Use the supports_rules and supports_facts fields to find and adjust facts and rules that are supported by a retracted fact.
+        # The supported_by lists in each fact/rule that it supports needs to be adjusted accordingly.
+        # If a supported fact/rule is no longer supported as a result of retracting this fact (and is not asserted), it should also be removed.
+
+        # if fact or rule has more than one supported_by, do not remove
+        if isinstance(fact_or_rule, Fact):
+            ind = self.facts.index(fact_or_rule)
+            fact_or_rule = self.facts[ind]
+        elif isinstance(fact_or_rule, Rule):
+            ind = self.rules.index(fact_or_rule)
+            fact_or_rule = self.rules[ind]
+
+
+
+        if len(fact_or_rule.supported_by)>0: pass;
+        else:
+        # able to delete
+            if isinstance(fact_or_rule, Fact):
+                # find the fact
+
+                for item in fact_or_rule.supports_facts:
+                    # find the supported one and del it
+                    for i in range(len(item.supported_by)):
+                        if item.supported_by[i][0] == fact_or_rule:
+                            del item.supported_by[i]
+                            self.kb_retract(item)
+                for item in fact_or_rule.supports_rules:
+                    for i in range(len(item.supported_by)):
+                        if item.supported_by[i][0] == fact_or_rule:
+                            del item.supported_by[i]
+                            self.kb_retract(item)
+
+                # del the fact_or_rule
+                ind = self.facts.index(fact_or_rule)
+                del self.facts[ind]
+
+            elif isinstance(fact_or_rule, Rule):
+                if fact_or_rule.asserted == True: pass;
+                else:
+                    for item in fact_or_rule.supports_facts:
+                        # find the supported one and del it
+                        for i in range(len(item.supported_by)):
+                            if item.supported_by[i][0] == fact_or_rule:
+                                del item.supported_by[i]
+                                self.kb_retract(item)
+                    for item in fact_or_rule.supports_rules:
+                        for i in range(len(item.supported_by)):
+                            if item.supported_by[i][0] == fact_or_rule:
+                                del item.supported_by[i]
+                                self.kb_retract(item)
+
+                    # del the fact_or_rule
+                    ind = self.rules.index(fact_or_rule)
+                    del self.facts[ind]
 
 class InferenceEngine(object):
     def fc_infer(self, fact, rule, kb):
@@ -146,3 +203,52 @@ class InferenceEngine(object):
             [fact.statement, rule.lhs, rule.rhs])
         ####################################################
         # Student code goes here
+
+        # match LHS and fact
+        match_result = match(fact.statement,rule.lhs[0])
+
+        # successfully match a LHS and a Rule
+        # which means a new rule or fact can be generate
+        if match_result != False:
+
+            # if LHS only have one statement, then it is a new fact
+            if len(rule.lhs) == 1:
+                # in this condition, no new rule will generate
+                fact_add = Fact(instantiate(rule.rhs, match_result))
+
+                # modify the support area
+                fact_add.asserted = False
+                # add supported_by rule and facts
+                fact_add.supported_by.append([fact, rule])
+
+                # merge supports_fact and rules
+                fact.supports_facts.append(fact_add)
+                rule.supports_facts.append(fact_add)
+
+                # add the new fact and modified rule
+                kb.kb_add(fact_add)
+
+            elif len(rule.lhs) > 1:
+                # a new rule can be generated
+                rule_add = copy.deepcopy(rule)
+                rule_add.lhs = []
+                rule_add.rhs = []
+
+                # LHS
+                for statements in rule.lhs[1:]:
+                    new_statement = instantiate(statements, match_result)
+                    rule_add.lhs.append(new_statement)
+                # RHS
+                rule_add.rhs = instantiate(rule.rhs, match_result)
+
+                rule_add.asserted = False
+                # modify the support area
+                # merge supported_by
+                rule_add.supported_by.append([fact, rule])
+
+                # merge supports_rule
+                fact.supports_rules.append(rule_add)
+                rule.supports_facts.append(rule_add)
+
+                # add the new rule and modified fact
+                kb.kb_add(rule_add)
