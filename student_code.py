@@ -138,11 +138,17 @@ class KnowledgeBase(object):
 
         # if fact or rule has more than one supported_by, do not remove
         if isinstance(fact_or_rule, Fact):
-            ind = self.facts.index(fact_or_rule)
-            fact_or_rule = self.facts[ind]
+            if fact_or_rule not in self.facts:
+                return None
+            else:
+                ind = self.facts.index(fact_or_rule)
+                fact_or_rule = self.facts[ind]
         elif isinstance(fact_or_rule, Rule):
-            ind = self.rules.index(fact_or_rule)
-            fact_or_rule = self.rules[ind]
+            if fact_or_rule not in self.rules:
+                return None
+            else:
+                ind = self.rules.index(fact_or_rule)
+                fact_or_rule = self.rules[ind]
 
 
 
@@ -153,15 +159,33 @@ class KnowledgeBase(object):
                 # find the fact
 
                 for item in fact_or_rule.supports_facts:
+                    # syn the item
+                    if item in self.facts:
+                        index_item = self.facts.index(item)
+                        item = self.facts[index_item]
+
                     # find the supported one and del it
-                    for i in range(len(item.supported_by)):
-                        if item.supported_by[i][0] == fact_or_rule:
-                            del item.supported_by[i]
+                    i_flag = - 0;
+                    length = len(item.supported_by)
+                    for i in range(length):
+                        real_i = i + i_flag
+                        if item.supported_by[real_i][0] == fact_or_rule:
+                            del item.supported_by[real_i]
+                            i_flag -= 1
                             self.kb_retract(item)
                 for item in fact_or_rule.supports_rules:
-                    for i in range(len(item.supported_by)):
-                        if item.supported_by[i][0] == fact_or_rule:
-                            del item.supported_by[i]
+                    # syn the item
+                    if item in self.rules:
+                        index_item = self.rules.index(item)
+                        item = self.rules[index_item]
+
+                    i_flag = - 0;
+                    length = len(item.supported_by)
+                    for i in range(length):
+                        real_i = i + i_flag
+                        if item.supported_by[real_i][0] == fact_or_rule:
+                            del item.supported_by[real_i]
+                            i_flag -= 1
                             self.kb_retract(item)
 
                 # del the fact_or_rule
@@ -172,15 +196,33 @@ class KnowledgeBase(object):
                 if fact_or_rule.asserted == True: pass;
                 else:
                     for item in fact_or_rule.supports_facts:
+                        # syn the item
+                        if item in self.facts:
+                            index_item = self.facts.index(item)
+                            item = self.facts[index_item]
+
                         # find the supported one and del it
-                        for i in range(len(item.supported_by)):
-                            if item.supported_by[i][1] == fact_or_rule:
-                                del item.supported_by[i]
+                        i_flag = - 0;
+                        length = len(item.supported_by)
+                        for i in range(length):
+                            real_i = i + i_flag
+                            if item.supported_by[real_i][1] == fact_or_rule:
+                                del item.supported_by[real_i]
+                                i_flag -= 1
                                 self.kb_retract(item)
                     for item in fact_or_rule.supports_rules:
-                        for i in range(len(item.supported_by)):
-                            if item.supported_by[i][1] == fact_or_rule:
-                                del item.supported_by[i]
+                        # syn the item
+                        if item in self.rules:
+                            index_item = self.rules.index(item)
+                            item = self.rules[index_item]
+
+                        i_flag = - 0;
+                        length = len(item.supported_by)
+                        for i in range(length):
+                            real_i = i + i_flag
+                            if item.supported_by[real_i][1] == fact_or_rule:
+                                del item.supported_by[real_i]
+                                i_flag -= 1
                                 self.kb_retract(item)
 
                     # del the fact_or_rule
@@ -248,7 +290,7 @@ class InferenceEngine(object):
 
                 # merge supports_rule
                 fact.supports_rules.append(rule_add)
-                rule.supports_facts.append(rule_add)
+                rule.supports_rules.append(rule_add)
 
                 # add the new rule and modified fact
                 kb.kb_add(rule_add)
