@@ -174,12 +174,12 @@ class KnowledgeBase(object):
                     for item in fact_or_rule.supports_facts:
                         # find the supported one and del it
                         for i in range(len(item.supported_by)):
-                            if item.supported_by[i][0] == fact_or_rule:
+                            if item.supported_by[i][1] == fact_or_rule:
                                 del item.supported_by[i]
                                 self.kb_retract(item)
                     for item in fact_or_rule.supports_rules:
                         for i in range(len(item.supported_by)):
-                            if item.supported_by[i][0] == fact_or_rule:
+                            if item.supported_by[i][1] == fact_or_rule:
                                 del item.supported_by[i]
                                 self.kb_retract(item)
 
